@@ -12,8 +12,7 @@ public class Network {
         this.userCount = 0;
     }
 
-    /** Creates a network with some users. The only purpose of this constructor is 
-     *  to allow testing the toString and getUser methods, before implementing other methods. */
+    /** Creates a network with some users for testing purposes. */
     public Network(int maxUserCount, boolean gettingStarted) {
         this(maxUserCount);
         users[0] = new User("Foo");
@@ -46,8 +45,7 @@ public class Network {
         if (userCount >= users.length || getUser(name) != null) {
             return false;
         }
-        users[userCount] = new User(name);
-        userCount++;
+        users[userCount++] = new User(name);
         return true;
     }
 
@@ -57,7 +55,7 @@ public class Network {
     public boolean addFollowee(String name1, String name2) {
         User user1 = getUser(name1);
         User user2 = getUser(name2);
-        if (user1 == null || user2 == null) {
+        if (user1 == null || user2 == null || name1.equalsIgnoreCase(name2)) {
             return false;
         }
         return user1.addFollowee(name2);
@@ -66,24 +64,25 @@ public class Network {
     /** For the user with the given name, recommends another user to follow. The recommended user is
      *  the user that has the maximal mutual number of followees as the user with the given name. */
     public String recommendWhoToFollow(String name) {
-        User currentUser = getUser(name);
-        if (currentUser == null) {
+        User user = getUser(name);
+        if (user == null) {
             return null;
         }
-        User recommendedUser = null;
-        int maxMutual = 0;
+
+        String recommendation = null;
+        int maxMutual = -1;
 
         for (int i = 0; i < userCount; i++) {
-            User otherUser = users[i];
-            if (!currentUser.follows(otherUser.getName()) && !currentUser.getName().equals(otherUser.getName())) {
-                int mutualCount = currentUser.countMutual(otherUser);
-                if (mutualCount > maxMutual) {
-                    maxMutual = mutualCount;
-                    recommendedUser = otherUser;
+            User potential = users[i];
+            if (!user.follows(potential.getName()) && !potential.getName().equals(name)) {
+                int mutual = user.countMutual(potential);
+                if (mutual > maxMutual) {
+                    maxMutual = mutual;
+                    recommendation = potential.getName();
                 }
             }
         }
-        return recommendedUser != null ? recommendedUser.getName() : null;
+        return recommendation;
     }
 
     /** Computes and returns the name of the most popular user in this network: 
@@ -93,10 +92,11 @@ public class Network {
         int maxCount = 0;
 
         for (int i = 0; i < userCount; i++) {
-            int count = followeeCount(users[i].getName());
+            String name = users[i].getName();
+            int count = followeeCount(name);
             if (count > maxCount) {
                 maxCount = count;
-                mostPopular = users[i].getName();
+                mostPopular = name;
             }
         }
         return mostPopular;
