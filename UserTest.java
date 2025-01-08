@@ -1,79 +1,55 @@
-/** Tests the User class. */
-public class UserTest {
-    public static void main(String[] args) {
-        System.out.println("...Testing the User class...\n");
-
-        System.out.println("...To get started, creating a dummy user for testing the toString and follows methods...\n");
-        User dummy = new User("Dummy", true);
-        System.out.println(dummy);
-        System.out.println("Dummy follows Bar: " + dummy.follows("Bar"));
-        System.out.println("Dummy follows Gil: " + dummy.follows("Gil"));
-
-        System.out.println("\n...Now starts the serious testing..\n");
-
-        System.out.println("...Creating a user named Alex...");
-        User alex = new User("Alex");
-        System.out.println(alex);
-
-        System.out.println("\n...Adding Ben, Neta, and Dana to the follows list of Alex...");
-        alex.addFollowee("Ben");
-        alex.addFollowee("Neta");
-        alex.addFollowee("Dana");
-        System.out.println(alex);
-
-        System.out.println("\n...Trying to add Ben again...");
-        alex.addFollowee("Ben");    
-
-        System.out.println("\n...Trying to add Or, Zohar, Dror, Josh, Idan, Uri, Maya, and Dan to Alex...");
-        alex.addFollowee("Or");
-        alex.addFollowee("Zohar");
-        alex.addFollowee("Dror");
-        alex.addFollowee("Josh");
-        alex.addFollowee("Idan");
-        alex.addFollowee("Uri");
-        alex.addFollowee("Maya");
-        alex.addFollowee("Dan"); // Exceeds the array limit           
-        System.out.println(alex);
-
-        System.out.println("\n...Removing Neta...");
-        alex.removeFollowee("Neta");
-
-        System.out.println("\n...Trying to remove Liam...");
-        alex.removeFollowee("Liam");
-
-        System.out.println(alex);
-
-        System.out.println("\n...Creating a user named Orly...");
-        User orly = new User("Orly");
-        System.out.println(orly);
-        
-        System.out.println("\n...Adding Boaz, Maya, Talia, Alex, and Dror to the follows list of Orly...");
-        orly.addFollowee("Boaz");
-        orly.addFollowee("Maya");
-        orly.addFollowee("Talia");
-        orly.addFollowee("Dror");
-        System.out.println(orly);
-
-        // Tests the countMutual method
-        System.out.println("\n...Counting how many users are followed by both Alex and Orly...");
-        System.out.println("The number of users that both Alex and Orly follow: " + alex.countMutual(orly));
-        System.out.println("The number of users that both Orly and Alex follow: " + orly.countMutual(alex));
-
-        // Tests the isFriend method
-        System.out.println("\n...Checking if Alex and Orly are friends...");
-        System.out.println("Alex is a friend of Orly: " + alex.isFriendOf(orly));
-        System.out.println("Orly is a friend of Alex: " + orly.isFriendOf(alex));
-        
-        // Making Alex and Orly friends
-        System.out.println("\n...Adding Orly to the follows list of Alex, and Alex to the follows list of Orly...");
-        alex.addFollowee("Orly");
-        orly.addFollowee("Alex");
-
-        // Tests the isFriend method
-        System.out.println("\n...Checking if Alex and Orly are friends...");
-        System.out.println("Alex is a friend of Orly: " + alex.isFriendOf(orly));
-        System.out.println("Orly is a friend of Alex: " + orly.isFriendOf(alex));
-        
-        System.out.println("\nAll User class tests completed.");
+/** If this user follows the given name, returns true; otherwise returns false. */
+public boolean follows(String name) {
+    for (int i = 0; i < fCount; i++) {
+        if (follows[i].equals(name)) {
+            return true;
+        }
     }
+    return false;
+}
+
+/** Makes this user follow the given name. If successful, returns true. 
+ *  If this user already follows the given name, or if the follows list is full, does nothing and returns false; */
+public boolean addFollowee(String name) {
+    if (fCount >= maxfCount || follows(name)) {
+        return false; // Cannot add if the list is full or already follows the name
+    }
+    follows[fCount] = name; // Add the new followee to the list
+    fCount++; // Increment the count of followees
+    return true;
+}
+
+/** Removes the given name from the follows list of this user. If successful, returns true.
+ *  If the name is not in the list, does nothing and returns false. */
+public boolean removeFollowee(String name) {
+    for (int i = 0; i < fCount; i++) {
+        if (follows[i].equals(name)) {
+            // Shift all elements after the current one left to fill the gap
+            for (int j = i; j < fCount - 1; j++) {
+                follows[j] = follows[j + 1];
+            }
+            follows[fCount - 1] = null; // Clear the last slot
+            fCount--; // Decrement the count of followees
+            return true;
+        }
+    }
+    return false; // Name not found
+}
+
+/** Counts the number of users that both this user and the other user follow.
+ *  This is the size of the intersection of the two follows lists. */
+public int countMutual(User other) {
+    int count = 0;
+    for (int i = 0; i < fCount; i++) {
+        if (other.follows(follows[i])) {
+            count++;
+        }
+    }
+    return count;
+}
+
+/** Checks if this user is a friend of the other user.
+ *  (if two users follow each other, they are said to be "friends.") */
+public boolean isFriendOf(User other) {
+    return this.follows(other.getName()) && other.follows(this.getName());
 }
